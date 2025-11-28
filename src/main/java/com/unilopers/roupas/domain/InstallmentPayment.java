@@ -2,14 +2,12 @@ package com.unilopers.roupas.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,17 +20,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InstallmentPayment {
     @Id
-    @Column(name = "installment_payment_id", length = 36)
-    @JacksonXmlProperty(localName = "id")
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "installment_payment_id")
+    @JacksonXmlProperty(localName = "installmentPaymentId")
+    private UUID installmentPaymentId;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at")
     @JacksonXmlProperty(localName = "createdAt")
     private LocalDateTime createdAt;
 
-    @Column(name = "order_id", length = 36)
-    @JacksonXmlProperty(localName = "orderId")
-    private String orderId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id", nullable = false)
+    @JacksonXmlProperty(localName = "order")
+    private Orders order;
 
     @Column(name = "installment_number")
     @JacksonXmlProperty(localName = "installmentNumber")
@@ -57,4 +57,11 @@ public class InstallmentPayment {
     @Column(name = "method", length = 255)
     @JacksonXmlProperty(localName = "method")
     private String method;
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
